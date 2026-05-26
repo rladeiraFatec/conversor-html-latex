@@ -30,6 +30,11 @@ export function converter(html) {
     let resultado = "";
     let pilha = new Stack();
     let i = 0;
+    // Adiciona preâmbulo do documento
+    resultado = "\\documentclass{article}\n";
+    resultado += "\\usepackage[utf8]{inputenc}\n";
+    resultado += "\\usepackage[T1]{fontenc}\n";
+    resultado += "\\begin{document}\n\n";
     while (i < html.length) {
         if (html[i] === "<") {
             let j = i + 1;
@@ -41,11 +46,16 @@ export function converter(html) {
             tag = limparTag(tag);
             if (j >= html.length) {
                 resultado += html[i];
+                i = j;
+                continue;
             }
-            else if (tag === "p") {
+            if (tag === "p") {
                 pilha.push("p");
             }
             else if (tag === "/p") {
+                if (pilha.vazia() || pilha.topo() !== "p") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "\n\n";
                 pilha.pop();
             }
@@ -54,6 +64,9 @@ export function converter(html) {
                 pilha.push("b");
             }
             else if (tag === "/b" || tag === "/strong") {
+                if (pilha.vazia() || pilha.topo() !== "b") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "}";
                 pilha.pop();
             }
@@ -62,6 +75,9 @@ export function converter(html) {
                 pilha.push("i");
             }
             else if (tag === "/i" || tag === "/em") {
+                if (pilha.vazia() || pilha.topo() !== "i") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "}";
                 pilha.pop();
             }
@@ -70,6 +86,9 @@ export function converter(html) {
                 pilha.push("ul");
             }
             else if (tag === "/ul") {
+                if (pilha.vazia() || pilha.topo() !== "ul") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "\\end{itemize}\n";
                 pilha.pop();
             }
@@ -78,6 +97,9 @@ export function converter(html) {
                 pilha.push("ol");
             }
             else if (tag === "/ol") {
+                if (pilha.vazia() || pilha.topo() !== "ol") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "\\end{enumerate}\n";
                 pilha.pop();
             }
@@ -86,6 +108,9 @@ export function converter(html) {
                 pilha.push("li");
             }
             else if (tag === "/li") {
+                if (pilha.vazia() || pilha.topo() !== "li") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "\n";
                 pilha.pop();
             }
@@ -97,6 +122,9 @@ export function converter(html) {
                 pilha.push("h1");
             }
             else if (tag === "/h1") {
+                if (pilha.vazia() || pilha.topo() !== "h1") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "}\n";
                 pilha.pop();
             }
@@ -105,6 +133,9 @@ export function converter(html) {
                 pilha.push("h2");
             }
             else if (tag === "/h2") {
+                if (pilha.vazia() || pilha.topo() !== "h2") {
+                    return "Erro de Sintaxe: Tag fechada incorretamente.";
+                }
                 resultado += "}\n";
                 pilha.pop();
             }
@@ -115,5 +146,10 @@ export function converter(html) {
         }
         i++;
     }
+    if (!pilha.vazia()) {
+        return "Erro de Sintaxe: Existem tags não fechadas.";
+    }
+    // Adiciona final do documento
+    resultado += "\n\\end{document}";
     return resultado.trim();
 }
